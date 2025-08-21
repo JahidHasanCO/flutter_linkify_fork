@@ -1,6 +1,6 @@
 name: flutter_linkify_fork
 description: Turns text URLs and emails into clickable inline links in text for Flutter.
-version: 1.0.0
+version: 1.1.0
 homepage: https://github.com/JahidHasanCO/flutter_linkify_fork
 
 environment:

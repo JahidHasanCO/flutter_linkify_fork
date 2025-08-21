@@ -46,16 +46,22 @@ Oh, and if you’re into YouTube creators, you might enjoy https://www.youtube.c
               Linkify(
                 onOpen: _onOpen,
                 text: text,
+                useFavicon: true,
+                formatFaviconUrl: true,
               ),
               Linkify(
                 onOpen: _onOpen,
                 text: "Made by https://cretezy.com\n\nMail: example@gmail.com",
+                useFavicon: true,
+                formatFaviconUrl: true,
               ),
               const SizedBox(height: 20),
               SelectableLinkify(
                 onOpen: _onOpen,
                 text:
                     "Modified by https://github.com/JahidHasanCO\n\nMail: jahidhasan.r150@gmail.com",
+                useFavicon: true,
+                formatFaviconUrl: true,
               ),
             ],
           ),
