@@ -7,8 +7,6 @@ extra feature that show fabicon before link.
 
 Required Dart >=2.17 (has null-safety support).
 
-[Pub](https://pub.dartlang.org/packages/flutter_linkify) - [API Docs](https://pub.dartlang.org/documentation/flutter_linkify/latest/) - [GitHub](https://github.com/Cretezy/flutter_linkify)
-
 ## Install
 
 Install (original package) by adding this package to your `pubspec.yaml`:
@@ -27,7 +25,7 @@ the browser/OS.
 Basic:
 
 ```dart
-import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:flutter_linkify_fork/flutter_linkify_fork.dart';
 
 Linkify
 (
@@ -107,4 +105,4 @@ URL and email are enabled by default.
 
 Full example can be found at [`example/lib/main.dart`](example/lib/main.dart).
 
-![Example Screenshot](https://github.com/Cretezy/flutter_linkify/raw/master/example/screenshot.png)
+![Example Screenshot](ART/screenshot.png)

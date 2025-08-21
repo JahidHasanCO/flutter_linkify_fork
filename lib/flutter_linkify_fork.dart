@@ -4,15 +4,15 @@ import 'package:linkify/linkify.dart';
 
 export 'package:linkify/linkify.dart'
     show
-    LinkifyElement,
-    LinkifyOptions,
-    LinkableElement,
-    TextElement,
-    Linkifier,
-    UrlElement,
-    UrlLinkifier,
-    EmailElement,
-    EmailLinkifier;
+        LinkifyElement,
+        LinkifyOptions,
+        LinkableElement,
+        TextElement,
+        Linkifier,
+        UrlElement,
+        UrlLinkifier,
+        EmailElement,
+        EmailLinkifier;
 
 /// Callback clicked link
 typedef LinkCallback = void Function(LinkableElement link);
@@ -74,6 +74,10 @@ class Linkify extends StatelessWidget {
 
   final bool useMouseRegion;
 
+  final bool useFavicon;
+
+  final bool formatFaviconUrl;
+
   const Linkify({
     Key? key,
     required this.text,
@@ -95,6 +99,8 @@ class Linkify extends StatelessWidget {
     this.textWidthBasis = TextWidthBasis.parent,
     this.textHeightBehavior,
     this.useMouseRegion = true,
+    this.useFavicon = true,
+    this.formatFaviconUrl = true,
   }) : super(key: key);
 
   @override
@@ -108,21 +114,17 @@ class Linkify extends StatelessWidget {
     return Text.rich(
       buildTextSpan(
         elements,
-        style: style ?? Theme
-            .of(context)
-            .textTheme
-            .bodyMedium,
+        style: style ?? Theme.of(context).textTheme.bodyMedium,
         onOpen: onOpen,
         useMouseRegion: useMouseRegion,
-        linkStyle: (style ?? Theme
-            .of(context)
-            .textTheme
-            .bodyMedium)
+        linkStyle: (style ?? Theme.of(context).textTheme.bodyMedium)
             ?.copyWith(
-          color: Colors.blueAccent,
-          decoration: TextDecoration.underline,
-        )
+              color: Colors.blueAccent,
+              decoration: TextDecoration.underline,
+            )
             .merge(linkStyle),
+        useFavicon: useFavicon,
+        formatFaviconUrl: formatFaviconUrl,
       ),
       textAlign: textAlign,
       textDirection: textDirection,
@@ -232,6 +234,10 @@ class SelectableLinkify extends StatelessWidget {
 
   final bool useMouseRegion;
 
+  final bool useFavicon;
+
+  final bool formatFaviconUrl;
+
   const SelectableLinkify({
     Key? key,
     required this.text,
@@ -266,6 +272,8 @@ class SelectableLinkify extends StatelessWidget {
     this.selectionControls,
     this.onSelectionChanged,
     this.useMouseRegion = false,
+    this.useFavicon = true,
+    this.formatFaviconUrl = true,
   }) : super(key: key);
 
   @override
@@ -279,21 +287,17 @@ class SelectableLinkify extends StatelessWidget {
     return SelectableText.rich(
       buildTextSpan(
         elements,
-        style: style ?? Theme
-            .of(context)
-            .textTheme
-            .bodyMedium,
+        style: style ?? Theme.of(context).textTheme.bodyMedium,
         onOpen: onOpen,
-        linkStyle: (style ?? Theme
-            .of(context)
-            .textTheme
-            .bodyMedium)
+        linkStyle: (style ?? Theme.of(context).textTheme.bodyMedium)
             ?.copyWith(
-          color: Colors.blueAccent,
-          decoration: TextDecoration.underline,
-        )
+              color: Colors.blueAccent,
+              decoration: TextDecoration.underline,
+            )
             .merge(linkStyle),
         useMouseRegion: useMouseRegion,
+        useFavicon: useFavicon,
+        formatFaviconUrl: formatFaviconUrl,
       ),
       textAlign: textAlign,
       textDirection: textDirection,
@@ -326,21 +330,24 @@ class LinkableSpan extends WidgetSpan {
     required MouseCursor mouseCursor,
     required InlineSpan inlineSpan,
   }) : super(
-    child: MouseRegion(
-      cursor: mouseCursor,
-      child: Text.rich(
-        inlineSpan,
-      ),
-    ),
-  );
+          child: MouseRegion(
+            cursor: mouseCursor,
+            child: Text.rich(
+              inlineSpan,
+            ),
+          ),
+        );
 }
 
 /// Raw TextSpan builder for more control on the RichText
-TextSpan buildTextSpan(List<LinkifyElement> elements, {
+TextSpan buildTextSpan(
+  List<LinkifyElement> elements, {
   TextStyle? style,
   TextStyle? linkStyle,
   LinkCallback? onOpen,
   bool useMouseRegion = false,
+  bool useFavicon = true,
+  bool formatFaviconUrl = true,
 }) =>
     TextSpan(
       children: buildTextSpanChildren(
@@ -349,6 +356,8 @@ TextSpan buildTextSpan(List<LinkifyElement> elements, {
         linkStyle: linkStyle,
         onOpen: onOpen,
         useMouseRegion: useMouseRegion,
+        useFavicon: useFavicon,
+        formatFaviconUrl: formatFaviconUrl,
       ),
     );
 
@@ -361,18 +370,34 @@ String _getFaviconUrl(String url) {
   }
 }
 
+String _getHandle(String url) {
+  try {
+    Uri uri = Uri.parse(url);
+
+    // Take last non-empty segment from path
+    String handle = uri.pathSegments.isNotEmpty
+        ? uri.pathSegments.lastWhere((segment) => segment.isNotEmpty)
+        : "";
+    return handle;
+  } catch (e) {
+    return url;
+  }
+}
 
 /// Raw TextSpan builder for more control on the RichText
-List<InlineSpan>? buildTextSpanChildren(List<LinkifyElement> elements, {
+List<InlineSpan>? buildTextSpanChildren(
+  List<LinkifyElement> elements, {
   TextStyle? style,
   TextStyle? linkStyle,
   LinkCallback? onOpen,
   bool useMouseRegion = false,
+  bool useFavicon = true,
+  required bool formatFaviconUrl,
 }) =>
     [
       for (var element in elements)
-        if (element is LinkableElement)
-          ...[
+        if (element is LinkableElement) ...[
+          if (useFavicon && element is UrlElement)
             WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: Padding(
@@ -382,21 +407,21 @@ List<InlineSpan>? buildTextSpanChildren(List<LinkifyElement> elements, {
                   width: 16,
                   height: 16,
                   errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.link, size: 14, color: Colors.grey),
+                      const Icon(Icons.link, size: 14, color: Colors.grey),
                 ),
               ),
             ),
-            TextSpan(
-              text: element.text,
-              style: linkStyle,
-              recognizer: onOpen != null
-                  ? (TapGestureRecognizer()
-                ..onTap = () => onOpen(element))
-                  : null,
-              mouseCursor: useMouseRegion ? SystemMouseCursors.click : null,
-            )
-          ]
-        else
+          TextSpan(
+            text: formatFaviconUrl && element is UrlElement
+                ? '/${_getHandle(element.text)}'
+                : element.text,
+            style: linkStyle,
+            recognizer: onOpen != null
+                ? (TapGestureRecognizer()..onTap = () => onOpen(element))
+                : null,
+            mouseCursor: useMouseRegion ? SystemMouseCursors.click : null,
+          )
+        ] else
           TextSpan(
             text: element.text,
             style: style,
@@ -411,6 +436,7 @@ class LinkifySpan extends TextSpan {
     LinkifyOptions options = const LinkifyOptions(),
     List<Linkifier> linkifiers = defaultLinkifiers,
     bool useMouseRegion = false,
+    bool useFavicon = true,
     super.style,
     super.recognizer,
     super.mouseCursor,
@@ -420,12 +446,14 @@ class LinkifySpan extends TextSpan {
     super.locale,
     super.spellOut,
   }) : super(
-    children: buildTextSpanChildren(
-      linkify(text, options: options, linkifiers: linkifiers),
-      style: style,
-      linkStyle: linkStyle,
-      onOpen: onOpen,
-      useMouseRegion: useMouseRegion,
-    ),
-  );
+          children: buildTextSpanChildren(
+            linkify(text, options: options, linkifiers: linkifiers),
+            style: style,
+            linkStyle: linkStyle,
+            onOpen: onOpen,
+            useMouseRegion: useMouseRegion,
+            useFavicon: useFavicon,
+            formatFaviconUrl: true,
+          ),
+        );
 }
